@@ -39,6 +39,27 @@ class ArchiveStoreTest(unittest.TestCase):
             self.assertEqual(results[0]["post_id"], "1001")
             self.assertEqual({asset["asset_type"] for asset in assets}, {"link", "image"})
 
+    def test_search_archive_defaults_to_50_results(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = ArchiveStore(Path(tmp) / "archive.sqlite")
+            page = ThreadPage(
+                url="https://voz.vn/t/sample.123/",
+                title="YouTube Reup",
+                page_count=1,
+                posts=[
+                    ParsedPost(
+                        post_id=str(1000 + index),
+                        username="tester",
+                        timestamp=f"2026-01-01T00:{index:02d}:00+0700",
+                        body_text=f"youtube reup post {index}",
+                    )
+                    for index in range(60)
+                ],
+            )
+            store.save_thread_page(page, source_mode="public")
+
+            self.assertEqual(len(store.search_archive("youtube")), 50)
+
 
 if __name__ == "__main__":
     unittest.main()

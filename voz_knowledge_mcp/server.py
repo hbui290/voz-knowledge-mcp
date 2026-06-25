@@ -31,9 +31,15 @@ def summarize_thread(url: str, mode: str = "auto") -> dict:
 
 
 @mcp.tool()
-def search_archive(query: str, limit: int = 20) -> list:
+def search_archive(query: str, limit: int = 50) -> list:
     """Search archived VOZ posts by thread title, username, or body text."""
     return ArchiveStore(DB_PATH).search_archive(query, limit=limit)
+
+
+@mcp.tool()
+def search_archive_grouped(query: str, limit_per_group: int = 5, max_matches: int = 500) -> dict:
+    """Search archived VOZ posts and group matches by heuristic topic."""
+    return ArchiveStore(DB_PATH).search_archive_grouped(query, limit_per_group=limit_per_group, max_matches=max_matches)
 
 
 @mcp.tool()
@@ -46,6 +52,18 @@ def extract_links(url: str, mode: str = "auto") -> dict:
 def crawl_threads(urls: List[str], mode: str = "auto", max_pages: Optional[int] = None) -> list:
     """Crawl multiple VOZ thread URLs into the local archive."""
     return _crawler().crawl_threads(urls, mode=mode, max_pages=max_pages)
+
+
+@mcp.tool()
+def build_thread_packet(url: str, mode: str = "auto", max_posts: Optional[int] = None) -> dict:
+    """Build a full clean/topic packet for insight synthesis and write it to archive/packets."""
+    return _crawler().build_thread_packet(url, mode=mode, max_posts=max_posts)
+
+
+@mcp.tool()
+def topic_digest(url: str, topic: str, mode: str = "auto", max_posts: int = 200) -> dict:
+    """Digest one topic from the full archived VOZ thread instead of relying on search limits."""
+    return _crawler().topic_digest(url, topic=topic, mode=mode, max_posts=max_posts)
 
 
 @mcp.tool()

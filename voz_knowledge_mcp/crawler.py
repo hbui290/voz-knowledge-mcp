@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 import requests
 
 from .browser_cdp import BrowserCdpManager
+from .knowledge import build_packet, topic_digest as build_topic_digest
 from .models import ThreadPage
 from .parser import VozParser
 from .storage import ArchiveStore
@@ -34,7 +35,8 @@ class VozCrawler:
         self.raw_dir = self.archive_dir / "raw"
         self.json_dir = self.archive_dir / "json"
         self.markdown_dir = self.archive_dir / "markdown"
-        for directory in (self.raw_dir, self.json_dir, self.markdown_dir):
+        self.packets_dir = self.archive_dir / "packets"
+        for directory in (self.raw_dir, self.json_dir, self.markdown_dir, self.packets_dir):
             directory.mkdir(parents=True, exist_ok=True)
 
     def read_thread(self, url: str, mode: str = "auto", max_pages: Optional[int] = None) -> Dict:
@@ -103,6 +105,23 @@ class VozCrawler:
         path = self.markdown_dir / f"{self._slug(result['thread_url'])}.md"
         path.write_text(summary, encoding="utf-8")
         return {"thread_url": result["thread_url"], "summary_markdown": summary, "markdown_path": str(path)}
+
+    def build_thread_packet(self, url: str, mode: str = "auto", max_posts: Optional[int] = None) -> Dict:
+        result = self.read_thread(url, mode=mode)
+        thread = self.store.get_thread(result["thread_url"]) or {"url": result["thread_url"], "title": result.get("title", "")}
+        posts = self.store.get_thread_posts(result["thread_url"])
+        assets = self.store.list_assets(result["thread_url"])
+        packet = build_packet(thread, posts, assets)
+        packet_path = self.packets_dir / f"{self._slug(result['thread_url'])}-packet.json"
+        packet_path.write_text(json.dumps(packet, ensure_ascii=False, indent=2), encoding="utf-8")
+        return self._packet_response(packet, packet_path, max_posts=max_posts)
+
+    def topic_digest(self, url: str, topic: str, mode: str = "auto", max_posts: int = 200) -> Dict:
+        result = self.read_thread(url, mode=mode)
+        thread = self.store.get_thread(result["thread_url"]) or {"url": result["thread_url"], "title": result.get("title", "")}
+        posts = self.store.get_thread_posts(result["thread_url"])
+        assets = self.store.list_assets(result["thread_url"])
+        return build_topic_digest(thread, posts, assets, topic=topic, max_posts=max_posts)
 
     def _crawl_with_mode(self, url: str, mode: str, max_pages: Optional[int]) -> List[ThreadPage]:
         if mode == "public":
@@ -227,6 +246,15 @@ class VozCrawler:
             lines.append("- No links found.")
         lines.extend(["", "## Checklist for manual review", "- Verify claims and external links.", "- Revisit image-only posts with OCR if needed.", "- Mark high-signal posts for deeper synthesis."])
         return "\n".join(lines) + "\n"
+
+    def _packet_response(self, packet: Dict, packet_path: Path, max_posts: Optional[int]) -> Dict:
+        response = {key: value for key, value in packet.items() if key not in {"posts", "removed_noise", "removed_links"}}
+        if max_posts is not None:
+            response["posts"] = packet["posts"][:max_posts]
+            response["returned_posts"] = len(response["posts"])
+        response["packet_path"] = str(packet_path)
+        response["full_packet_written"] = True
+        return response
 
     def _looks_complete(self, pages: List[ThreadPage]) -> bool:
         return bool(pages and any(page.posts for page in pages))

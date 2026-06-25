@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from .knowledge import classify_topics, compact_post
+
 from .models import ParsedPost, ThreadPage
 
 
@@ -44,7 +46,15 @@ class ArchiveStore:
                 (thread_url, scope, summary_markdown, now),
             )
 
-    def search_archive(self, query: str, limit: int = 20) -> List[Dict[str, str]]:
+    def get_thread(self, thread_url: str) -> Optional[Dict[str, str]]:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT url, title, page_count, last_crawled_at, source_mode FROM threads WHERE url = ?",
+                (thread_url,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def search_archive(self, query: str, limit: int = 50) -> List[Dict[str, str]]:
         pattern = f"%{query}%"
         with self._connect() as conn:
             rows = conn.execute(
@@ -59,6 +69,28 @@ class ArchiveStore:
                 (pattern, pattern, pattern, limit),
             ).fetchall()
         return [dict(row) for row in rows]
+
+    def search_archive_grouped(self, query: str, limit_per_group: int = 5, max_matches: int = 500) -> Dict:
+        matches = self.search_archive(query, limit=max_matches)
+        grouped: Dict[str, List[Dict]] = {}
+        for row in matches:
+            row = dict(row)
+            row["topics"] = classify_topics(row)
+            row["signal_score"] = 1
+            for topic in row["topics"]:
+                grouped.setdefault(topic, []).append(row)
+        groups = {}
+        for topic, rows in grouped.items():
+            groups[topic] = {
+                "count": len(rows),
+                "posts": [compact_post(row) for row in rows[:limit_per_group]],
+            }
+        return {
+            "query": query,
+            "total_matches": len(matches),
+            "limit_per_group": limit_per_group,
+            "groups": dict(sorted(groups.items())),
+        }
 
     def list_assets(self, thread_url: Optional[str] = None) -> List[Dict[str, str]]:
         sql = "SELECT thread_url, post_id, asset_type, url, status FROM assets"

@@ -30,17 +30,22 @@ Tools exposed:
 
 - `read_thread(url, mode="auto", max_pages=None)`
 - `summarize_thread(url, mode="auto")`
-- `search_archive(query, limit=20)`
+- `search_archive(query, limit=50)`
+- `search_archive_grouped(query, limit_per_group=5, max_matches=500)`
 - `extract_links(url, mode="auto")`
 - `crawl_threads(urls, mode="auto", max_pages=None)`
+- `build_thread_packet(url, mode="auto", max_posts=None)`
+- `topic_digest(url, topic, mode="auto", max_posts=200)`
 - `setup_browser_cdp()`
 
 ## Recommended Knowledge Workflow
 
-The MCP stores raw structured forum content. For real knowledge work, use the MCP output as source material and let the agent synthesize from it. A good workflow is:
+The MCP stores raw structured forum content. `search_archive` is for quick lookup only; do not use a small search result set as the basis for full insight synthesis. For real knowledge work, use `build_thread_packet` or `topic_digest` so the agent can synthesize from full-thread source material.
+
+A good workflow is:
 
 1. Crawl/archive the thread with `read_thread` or `summarize_thread`.
-2. Work from structured posts or JSON/SQLite archive, not only the short summary.
+2. Build a full packet with `build_thread_packet`.
 3. Remove low-signal noise such as bumps, bookmarks, thanks-only replies, app signatures, and empty replies.
 4. Clean links conservatively:
    - remove forum mechanics such as `voz.vn/goto/post?id=...`, profile/share/quote links, smilies, app signature links, emoji CDN, and `data:image` placeholders;
@@ -56,7 +61,10 @@ The companion skill includes `references/insight-writing.md` with the recommende
 ```bash
 python -m voz_knowledge_mcp.cli read-thread "https://voz.vn/t/example.123/" --mode public --max-pages 2
 python -m voz_knowledge_mcp.cli summarize-thread "https://voz.vn/t/example.123/" --mode public
-python -m voz_knowledge_mcp.cli search-archive "youtube reup"
+python -m voz_knowledge_mcp.cli search-archive "keyword"
+python -m voz_knowledge_mcp.cli search-archive-grouped "affiliate"
+python -m voz_knowledge_mcp.cli build-thread-packet "https://voz.vn/t/example.123/"
+python -m voz_knowledge_mcp.cli topic-digest "https://voz.vn/t/example.123/" "facebook reels"
 ```
 
 ## Read Order

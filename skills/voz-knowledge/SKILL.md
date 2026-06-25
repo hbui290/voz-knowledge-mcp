@@ -15,9 +15,12 @@ Use these MCP tools when available:
 
 - `read_thread(url, mode="auto", max_pages=None)`: archive a VOZ thread and return structured posts/assets.
 - `summarize_thread(url, mode="auto")`: archive the thread and create a Markdown summary.
-- `search_archive(query, limit=20)`: search previously archived posts.
+- `search_archive(query, limit=50)`: quick keyword lookup in archived posts; not enough for full-thread insight synthesis.
+- `search_archive_grouped(query, limit_per_group=5, max_matches=500)`: keyword lookup grouped by heuristic topic.
 - `extract_links(url, mode="auto")`: archive the thread and return links/images/assets.
 - `crawl_threads(urls, mode="auto", max_pages=None)`: archive several threads.
+- `build_thread_packet(url, mode="auto", max_posts=None)`: archive and build a clean full-thread packet for insight synthesis; writes the full packet to `archive/packets/`.
+- `topic_digest(url, topic, mode="auto", max_posts=200)`: digest one topic from the full thread instead of relying on search limits.
 - `setup_browser_cdp()`: launch installed Chromium-family browsers with local CDP ports for browser fallback.
 
 If the MCP tools are not exposed in the current environment, use the local CLI from the MCP project root:
@@ -31,7 +34,7 @@ python -m voz_knowledge_mcp.cli read-thread "<VOZ_URL>" --mode auto
 When the user asks to "cao noi dung", "tong hop kien thuc", "rut insight", "viet thanh bai chia se", or anything beyond a brief summary, do not stop at `summarize_thread`. Use this workflow:
 
 1. Archive the thread with `read_thread` or `summarize_thread` in `mode="auto"`.
-2. Work from structured/raw archived posts, not only the generated Markdown summary.
+2. Call `build_thread_packet` for whole-thread insight work, or `topic_digest` for one topic. Do not base insight on `search_archive` alone.
 3. Remove obvious noise posts such as bumps, thanks-only replies, bookmarks, app signatures, empty replies, and jokes that add no knowledge.
 4. Clean links carefully:
    - Remove forum mechanics: `voz.vn/goto/post?id=...`, quote/share links, profile links, app signature links, smilies, emoji CDN, `data:image` placeholders.
@@ -96,7 +99,7 @@ For Vietnamese users, answer in Vietnamese by default. Be concise and practical:
 
 - User sends a VOZ thread and asks "đọc/tóm tắt/cào": call `summarize_thread(url, mode="auto")`.
 - User asks "lấy link/tài nguyên trong thread": call `extract_links(url, mode="auto")`.
-- User asks "tìm lại trong kho VOZ": call `search_archive(query)`.
+- User asks "tìm lại trong kho VOZ": call `search_archive(query)` or `search_archive_grouped(query)` when they need patterns, not just a flat list.
 - User sends many VOZ URLs: call `crawl_threads(urls, mode="auto")`, then summarize or search as requested.
 - User asks how browser accounts are chosen: explain configured endpoints first, then auto-launched browser profiles, plus finite fallback.
-- User asks to turn a thread into knowledge/experience/insight: archive it, clean noise, preserve real links, inspect content links, then write a natural insight guide using `references/insight-writing.md`.
+- User asks to turn a thread into knowledge/experience/insight: call `build_thread_packet`, inspect meaningful content links, then write a natural insight guide using `references/insight-writing.md`.
