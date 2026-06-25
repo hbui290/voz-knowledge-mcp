@@ -22,7 +22,7 @@ Use these MCP tools when available:
 If the MCP tools are not exposed in the current environment, use the local CLI from the MCP project root:
 
 ```bash
-/Users/winston/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 -m voz_knowledge_mcp.cli read-thread "<VOZ_URL>" --mode auto
+python -m voz_knowledge_mcp.cli read-thread "<VOZ_URL>" --mode auto
 ```
 
 ## Mode Policy

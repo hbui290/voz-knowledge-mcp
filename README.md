@@ -12,10 +12,10 @@ python3 -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-Bundled runtime example:
+Use any Python 3.10+ runtime. Verify with:
 
 ```bash
-/Users/winston/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 -m pip install -r requirements.txt
+python --version
 ```
 
 ## Run As MCP
