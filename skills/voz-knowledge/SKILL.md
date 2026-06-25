@@ -18,6 +18,7 @@ Use these MCP tools when available:
 - `search_archive(query, limit=20)`: search previously archived posts.
 - `extract_links(url, mode="auto")`: archive the thread and return links/images/assets.
 - `crawl_threads(urls, mode="auto", max_pages=None)`: archive several threads.
+- `setup_browser_cdp()`: launch installed Chromium-family browsers with local CDP ports for browser fallback.
 
 If the MCP tools are not exposed in the current environment, use the local CLI from the MCP project root:
 
@@ -37,7 +38,9 @@ Never ask the user for their VOZ password. Do not ask for cookies unless the use
 
 ## Browser Fallback
 
-When browser fallback is needed, explain that MCP uses CDP endpoints configured outside the prompt. It tries a finite ordered list and stops at the first endpoint that returns readable posts.
+When browser fallback is needed, do not ask the user to manually configure CDP first. The MCP tries configured CDP endpoints, then auto-launches installed Chromium-family browsers with local CDP ports. It tries a finite ordered list and stops at the first endpoint that returns readable posts.
+
+Call `setup_browser_cdp()` proactively when a task clearly needs logged-in VOZ content or when browser fallback previously failed due to missing CDP endpoints. Automatic launch uses dedicated local profiles under `archive/browser-profiles/`; the user may need to log into VOZ once in that launched profile.
 
 Supported environment variables, in order:
 
@@ -75,4 +78,4 @@ For Vietnamese users, answer in Vietnamese by default. Be concise and practical:
 - User asks "lấy link/tài nguyên trong thread": call `extract_links(url, mode="auto")`.
 - User asks "tìm lại trong kho VOZ": call `search_archive(query)`.
 - User sends many VOZ URLs: call `crawl_threads(urls, mode="auto")`, then summarize or search as requested.
-- User asks how browser accounts are chosen: explain `VOZ_BROWSER_CDP_URLS` priority and finite fallback.
+- User asks how browser accounts are chosen: explain configured endpoints first, then auto-launched browser profiles, plus finite fallback.

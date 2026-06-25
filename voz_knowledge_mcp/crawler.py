@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 
 import requests
 
+from .browser_cdp import BrowserCdpManager
 from .models import ThreadPage
 from .parser import VozParser
 from .storage import ArchiveStore
@@ -26,6 +27,7 @@ class VozCrawler:
     ):
         self.store = store
         self.archive_dir = Path(archive_dir)
+        self.cdp_manager = BrowserCdpManager(self.archive_dir)
         self.delay_seconds = delay_seconds
         self.timeout_seconds = timeout_seconds
         self.parser = VozParser()
@@ -171,24 +173,7 @@ class VozCrawler:
         return pages
 
     def _browser_cdp_urls(self) -> List[str]:
-        ordered = []
-        for value in self._split_env_urls(os.environ.get("VOZ_BROWSER_CDP_URLS")):
-            ordered.append(value)
-        for name in (
-            "VOZ_CHROME_CDP_URL",
-            "VOZ_BRAVE_CDP_URL",
-            "VOZ_EDGE_CDP_URL",
-            "VOZ_CHROMIUM_CDP_URL",
-            "VOZ_ARC_CDP_URL",
-            "VOZ_VIVALDI_CDP_URL",
-            "VOZ_OPERA_CDP_URL",
-            "VOZ_COCCOC_CDP_URL",
-            "VOZ_BROWSER_CDP_URL",
-        ):
-            value = os.environ.get(name)
-            if value:
-                ordered.append(value.strip())
-        return self._dedupe(ordered)
+        return self.cdp_manager.cdp_urls(auto_launch=True)
 
     def _fetch(self, session: requests.Session, url: str) -> str:
         headers = {
@@ -250,20 +235,6 @@ class VozCrawler:
         if mode == "auto":
             return ["public", "browser"]
         return [mode]
-
-    def _split_env_urls(self, value: Optional[str]) -> List[str]:
-        if not value:
-            return []
-        return [part.strip() for part in value.replace("\n", ",").split(",") if part.strip()]
-
-    def _dedupe(self, values: List[str]) -> List[str]:
-        seen = set()
-        result = []
-        for value in values:
-            if value not in seen:
-                seen.add(value)
-                result.append(value)
-        return result
 
     def _page_url(self, url: str, page_number: int) -> str:
         base = url.rstrip("/") + "/"

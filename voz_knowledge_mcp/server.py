@@ -48,6 +48,12 @@ def crawl_threads(urls: List[str], mode: str = "auto", max_pages: Optional[int] 
     return _crawler().crawl_threads(urls, mode=mode, max_pages=max_pages)
 
 
+@mcp.tool()
+def setup_browser_cdp() -> dict:
+    """Launch installed Chromium-family browsers with local CDP ports for browser fallback."""
+    return _crawler().cdp_manager.setup()
+
+
 def main() -> None:
     mcp.run()
 

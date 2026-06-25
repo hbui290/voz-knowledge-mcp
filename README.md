@@ -33,6 +33,7 @@ Tools exposed:
 - `search_archive(query, limit=20)`
 - `extract_links(url, mode="auto")`
 - `crawl_threads(urls, mode="auto", max_pages=None)`
+- `setup_browser_cdp()`
 
 ## CLI
 
@@ -52,11 +53,13 @@ python -m voz_knowledge_mcp.cli search-archive "youtube reup"
 
 Browser mode uses CDP, short for Chrome DevTools Protocol. CDP is a local control port exposed by Chromium-family browsers such as Brave, Chrome, Edge, Chromium, Arc, Vivaldi, Opera, and Coc Coc.
 
-Normal browser windows do not expose CDP. To let this MCP read pages through a browser session that is already logged into VOZ, launch that browser with `--remote-debugging-port`.
+Normal browser windows do not expose CDP. Browser mode first uses configured CDP endpoints, then automatically tries to launch installed Chromium-family browsers with local CDP ports. You can also run `setup_browser_cdp()` explicitly to prepare browser fallback before crawling.
 
 Use `127.0.0.1` endpoints only. Do not expose the CDP port to a public network, because anything that can reach that port can control that browser session.
 
-Example with Brave:
+Automatic launch uses dedicated local browser profiles under `archive/browser-profiles/`. Log into VOZ once in the launched profile if browser fallback needs authenticated content.
+
+Manual override example with Brave:
 
 ```bash
 /Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser --remote-debugging-port=9222
@@ -88,5 +91,7 @@ VOZ_BROWSER_CDP_URL
 ```
 
 MCP stops at the first browser endpoint that returns readable posts. If none work, it returns an error instead of retrying forever, or keeps the public baseline when running in `auto`.
+
+Set `VOZ_AUTO_LAUNCH_BROWSERS=0` to disable automatic browser launch and use only configured CDP endpoints.
 
 Do not put passwords in git. `archive/` is ignored.

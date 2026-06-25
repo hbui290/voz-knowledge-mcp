@@ -104,7 +104,7 @@ class VozCrawlerModesTest(unittest.TestCase):
                 "VOZ_BROWSER_CDP_URL": "http://127.0.0.1:9231",
             }
 
-            with patch.dict("os.environ", env, clear=True):
+            with patch.dict("os.environ", env, clear=True), patch.object(crawler.cdp_manager, "_is_installed", return_value=False):
                 self.assertEqual(
                     crawler._browser_cdp_urls(),
                     [
