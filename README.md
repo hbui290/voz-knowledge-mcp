@@ -48,7 +48,15 @@ python -m voz_knowledge_mcp.cli search-archive "youtube reup"
 
 `mode="public"` only reads content that anonymous visitors can see.
 
-Browser mode connects to a Chromium-family browser you launched with remote debugging and already logged into VOZ. This works with Brave, Chrome, Edge, and similar browsers.
+## Browser Mode and CDP
+
+Browser mode uses CDP, short for Chrome DevTools Protocol. CDP is a local control port exposed by Chromium-family browsers such as Brave, Chrome, Edge, Chromium, Arc, Vivaldi, Opera, and Coc Coc.
+
+Normal browser windows do not expose CDP. To let this MCP read pages through a browser session that is already logged into VOZ, launch that browser with `--remote-debugging-port`.
+
+Use `127.0.0.1` endpoints only. Do not expose the CDP port to a public network, because anything that can reach that port can control that browser session.
+
+Example with Brave:
 
 ```bash
 /Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser --remote-debugging-port=9222
@@ -56,7 +64,7 @@ export VOZ_BROWSER_CDP_URL=http://127.0.0.1:9222
 python -m voz_knowledge_mcp.cli read-thread "https://voz.vn/t/example.123/" --mode browser
 ```
 
-For multiple logged-in browsers, configure them in the order you want MCP to try:
+Example with multiple logged-in browsers, tried in order:
 
 ```bash
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9223
