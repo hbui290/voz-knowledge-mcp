@@ -1,12 +1,21 @@
 # VOZ Knowledge MCP
 
-Local Python MCP server for crawling public or logged-in [VOZ](https://voz.vn/) forum threads, archiving posts to SQLite, and exposing search/summarization tools to an AI agent.
+Local MCP server for archiving, searching, and summarizing [VOZ](https://voz.vn/) forum threads. It stores thread content locally, cleans forum noise, preserves useful links, and builds full-thread packets for AI agents to synthesize practical knowledge notes.
 
 Target forum: [https://voz.vn/](https://voz.vn/)
 
-MCP SDK needs Python 3.10+. In this Codex workspace, use the bundled Python runtime if the system `python3` is 3.9.
+## Features
 
-## Install
+- Crawl public VOZ threads and save posts/assets to SQLite.
+- Use logged-in Chromium-family browser fallback when public content is incomplete.
+- Search archived posts quickly, or group search results by topic.
+- Build full-thread packets for long-form insight writing instead of relying on small search samples.
+- Extract useful links while removing VOZ mechanics such as `goto/post?id=...`.
+- Keep raw HTML, summaries, JSON exports, and packet outputs in a local ignored archive folder.
+
+## Quick Start
+
+Requires Python 3.10+.
 
 ```bash
 python3 -m venv .venv
@@ -14,74 +23,94 @@ python3 -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-Use any Python 3.10+ runtime. Verify with:
+Run a quick public crawl:
 
 ```bash
-python --version
+python -m voz_knowledge_mcp.cli summarize-thread "https://voz.vn/t/example.123/" --mode public
 ```
 
-## Run As MCP
+Run as an MCP server:
 
 ```bash
 python -m voz_knowledge_mcp.server
 ```
 
-Companion skill for agents: `skills/voz-knowledge/SKILL.md`.
+## MCP Client Config
 
-Tools exposed:
+Example MCP config:
 
-- `read_thread(url, mode="auto", max_pages=None)`
-- `summarize_thread(url, mode="auto")`
-- `search_archive(query, limit=50)`
-- `search_archive_grouped(query, limit_per_group=5, max_matches=500)`
-- `extract_links(url, mode="auto")`
-- `crawl_threads(urls, mode="auto", max_pages=None)`
-- `build_thread_packet(url, mode="auto", max_posts=None)`
-- `topic_digest(url, topic, mode="auto", max_posts=200)`
-- `setup_browser_cdp()`
+```toml
+[mcp_servers.voz_knowledge]
+command = "/path/to/voz-knowledge-mcp/.venv/bin/python"
+args = ["-m", "voz_knowledge_mcp.server"]
+cwd = "/path/to/voz-knowledge-mcp"
+```
 
-## Recommended Knowledge Workflow
+Use the Python executable from your virtual environment when possible. If your MCP client launches commands through a shell, the same command is:
 
-The MCP stores raw structured forum content. `search_archive` is for quick lookup only; do not use a small search result set as the basis for full insight synthesis. For real knowledge work, use `build_thread_packet` or `topic_digest` so the agent can synthesize from full-thread source material.
+```bash
+cd /path/to/voz-knowledge-mcp
+.venv/bin/python -m voz_knowledge_mcp.server
+```
 
-A good workflow is:
+Companion Codex skill for agents: `skills/voz-knowledge/SKILL.md`.
 
-1. Crawl/archive the thread with `read_thread` or `summarize_thread`.
-2. Build a full packet with `build_thread_packet`.
-3. Remove low-signal noise such as bumps, bookmarks, thanks-only replies, app signatures, and empty replies.
-4. Clean links conservatively:
-   - remove forum mechanics such as `voz.vn/goto/post?id=...`, profile/share/quote links, smilies, app signature links, emoji CDN, and `data:image` placeholders;
-   - keep real resources such as VOZ attachments, VOZ thread/post links, YouTube, Reddit, Facebook, TikTok, X/Twitter, Telegram, tools, files, and external references.
-5. Inspect preserved content links before writing a guide. Summarize the role of each meaningful link in the discussion.
-6. Treat screenshots as evidence tied to their source posts. Link them for verification and avoid over-interpreting image-only evidence.
-7. Write a natural insight guide: concrete lessons, traps, what to do, what to avoid, and why the source supports each point.
+## Tools
 
-The companion skill includes `references/insight-writing.md` with the recommended style for turning long VOZ threads into useful knowledge notes.
+| Tool | Use when |
+| --- | --- |
+| `read_thread(url, mode="auto", max_pages=None)` | Archive a VOZ thread and return structured posts/assets. |
+| `summarize_thread(url, mode="auto")` | Create a readable Markdown summary from a thread. |
+| `search_archive(query, limit=50)` | Do a quick keyword lookup in archived posts. |
+| `search_archive_grouped(query, limit_per_group=5, max_matches=500)` | Search and group matching posts by topic. |
+| `extract_links(url, mode="auto")` | Extract external links, images, and attachments from a thread. |
+| `crawl_threads(urls, mode="auto", max_pages=None)` | Archive several threads. |
+| `build_thread_packet(url, mode="auto", max_posts=None)` | Build a clean full-thread packet for insight synthesis. |
+| `topic_digest(url, topic, mode="auto", max_posts=200)` | Digest one topic from the full thread. |
+| `setup_browser_cdp()` | Prepare local browser fallback endpoints. |
 
-## CLI
+## CLI Examples
 
 ```bash
 python -m voz_knowledge_mcp.cli read-thread "https://voz.vn/t/example.123/" --mode public --max-pages 2
-python -m voz_knowledge_mcp.cli summarize-thread "https://voz.vn/t/example.123/" --mode public
+python -m voz_knowledge_mcp.cli summarize-thread "https://voz.vn/t/example.123/" --mode auto
 python -m voz_knowledge_mcp.cli search-archive "keyword"
 python -m voz_knowledge_mcp.cli search-archive-grouped "affiliate"
 python -m voz_knowledge_mcp.cli build-thread-packet "https://voz.vn/t/example.123/"
 python -m voz_knowledge_mcp.cli topic-digest "https://voz.vn/t/example.123/" "facebook reels"
 ```
 
-## Read Order
+## Knowledge Workflow
 
-`mode="auto"` reads public first as a baseline, then still tries browser mode. If a browser returns readable posts, MCP uses the browser result and stops. If every browser endpoint fails, MCP keeps the public result when public worked.
+`search_archive` is for quick lookup only. Do not use a small search result set as the basis for full-thread insight writing.
 
-`mode="public"` only reads content that anonymous visitors can see.
+For knowledge synthesis:
 
-## Browser Mode and CDP
+1. Archive the thread with `read_thread` or `summarize_thread`.
+2. Build a full packet with `build_thread_packet`, or use `topic_digest` for one topic.
+3. Remove low-signal posts such as bumps, bookmarks, thanks-only replies, app signatures, and empty replies.
+4. Preserve meaningful resources: VOZ attachments, VOZ thread/post links, YouTube, Reddit, Facebook, TikTok, X/Twitter, Telegram, tool pages, files, and other external references.
+5. Remove forum mechanics such as `voz.vn/goto/post?id=...`, profile/share/quote links, smilies, emoji CDN, and `data:image` placeholders.
+6. Inspect preserved content links before writing a guide.
+7. Treat screenshots as evidence tied to their source posts, not as standalone claims.
+
+The companion skill includes `references/insight-writing.md` for turning long VOZ threads into useful knowledge notes.
+
+## Read Modes
+
+`mode="auto"` reads public content first, then tries browser mode. If a browser returns readable posts, the MCP uses the browser result and stops. If browser fallback fails, it keeps the public baseline when public worked.
+
+`mode="public"` reads only content visible without login.
+
+`mode="browser"` reads through configured or auto-launched Chromium-family browser endpoints.
+
+## Browser Fallback and CDP
 
 Browser mode uses CDP, short for Chrome DevTools Protocol. CDP is a local control port exposed by Chromium-family browsers such as Brave, Chrome, Edge, Chromium, Arc, Vivaldi, Opera, and Coc Coc.
 
-Normal browser windows do not expose CDP. Browser mode first uses configured CDP endpoints, then automatically tries to launch installed Chromium-family browsers with local CDP ports. You can also run `setup_browser_cdp()` explicitly to prepare browser fallback before crawling.
+Normal browser windows do not expose CDP. Browser mode first uses configured CDP endpoints, then automatically tries to launch installed Chromium-family browsers with local CDP ports. You can also run `setup_browser_cdp()` explicitly before crawling.
 
-Use `127.0.0.1` endpoints only. Do not expose the CDP port to a public network, because anything that can reach that port can control that browser session.
+Use `127.0.0.1` endpoints only. Do not expose CDP to a public network, because anything that can reach that port can control that browser session.
 
 Automatic launch uses dedicated local browser profiles under `archive/browser-profiles/`. Log into VOZ once in the launched profile if browser fallback needs authenticated content.
 
@@ -93,7 +122,7 @@ export VOZ_BROWSER_CDP_URL=http://127.0.0.1:9222
 python -m voz_knowledge_mcp.cli read-thread "https://voz.vn/t/example.123/" --mode browser
 ```
 
-Example with multiple logged-in browsers, tried in order:
+Multiple logged-in browsers can be tried in order:
 
 ```bash
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9223
@@ -116,11 +145,41 @@ VOZ_COCCOC_CDP_URL
 VOZ_BROWSER_CDP_URL
 ```
 
-MCP stops at the first browser endpoint that returns readable posts. If none work, it returns an error instead of retrying forever, or keeps the public baseline when running in `auto`.
-
 Set `VOZ_AUTO_LAUNCH_BROWSERS=0` to disable automatic browser launch and use only configured CDP endpoints.
 
-Do not put passwords in git. `archive/` is ignored.
+## Local Data
+
+Runtime data is written under `archive/`:
+
+- `archive/voz.db`: SQLite archive.
+- `archive/raw/`: raw HTML snapshots for debugging.
+- `archive/summaries/`: Markdown summaries.
+- `archive/exports/`: JSON exports.
+- `archive/packets/`: full-thread knowledge packets.
+- `archive/browser-profiles/`: dedicated browser profiles for auto-launched browser fallback.
+
+`archive/` is ignored by git.
+
+## Limitations
+
+- This project does not bypass VOZ permissions or login requirements.
+- It does not store VOZ passwords.
+- It does not use cookies by default.
+- It does not OCR or interpret screenshots in v1.
+- Search is keyword/heuristic based; semantic embedding search is not included in v1.
+- MCP prepares clean source material. The final insight writing should still be done by an AI agent or human reviewer.
+
+## Privacy and Safety
+
+Keep this server local. Do not expose browser CDP ports publicly. Do not commit `archive/`, browser profiles, cookies, exported private content, or other session data.
+
+When summarizing forum content, preserve useful source links and avoid presenting unverified claims as facts.
+
+## Test
+
+```bash
+python -m unittest discover -s tests -v
+```
 
 ## License
 
