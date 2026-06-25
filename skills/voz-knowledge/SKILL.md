@@ -26,6 +26,25 @@ If the MCP tools are not exposed in the current environment, use the local CLI f
 python -m voz_knowledge_mcp.cli read-thread "<VOZ_URL>" --mode auto
 ```
 
+## Knowledge Workflow
+
+When the user asks to "cao noi dung", "tong hop kien thuc", "rut insight", "viet thanh bai chia se", or anything beyond a brief summary, do not stop at `summarize_thread`. Use this workflow:
+
+1. Archive the thread with `read_thread` or `summarize_thread` in `mode="auto"`.
+2. Work from structured/raw archived posts, not only the generated Markdown summary.
+3. Remove obvious noise posts such as bumps, thanks-only replies, bookmarks, app signatures, empty replies, and jokes that add no knowledge.
+4. Clean links carefully:
+   - Remove forum mechanics: `voz.vn/goto/post?id=...`, quote/share links, profile links, app signature links, smilies, emoji CDN, `data:image` placeholders.
+   - Preserve real resources: VOZ attachments, VOZ thread/post links, YouTube, Reddit, Facebook, TikTok, X/Twitter, Telegram, tool pages, files, and other external URLs.
+5. Inspect preserved content links before writing insight:
+   - Read VOZ thread/post links when accessible.
+   - Open Reddit/YouTube/Facebook/TikTok/tool links when accessible; summarize their role in the discussion.
+   - If a dynamic site cannot be fully inspected, say what was accessible and avoid inventing details.
+6. Treat images/screenshots as evidence, not standalone content:
+   - Link them beside the source post they support.
+   - Summarize only what is visible or what the surrounding posts explain.
+7. Write a natural insight guide, not a mechanical report. Read `references/insight-writing.md` before producing long-form knowledge artifacts.
+
 ## Mode Policy
 
 Default to `mode="auto"` unless the user explicitly asks otherwise.
@@ -71,6 +90,7 @@ For Vietnamese users, answer in Vietnamese by default. Be concise and practical:
 - For summaries, separate signal from noise: key ideas, actionable checklist, useful links/resources, and caveats requiring verification.
 - For search results, cite usernames/post IDs/timestamps when available.
 - For potentially scammy or gray-market content, avoid endorsing claims; summarize neutrally and warn to verify links/files.
+- For insight guides, write like a person sharing useful field notes: concrete traps, what to do, what not to do, and why the source supports it. Avoid generic filler like "lam content chat luong" unless the source gives a specific meaning.
 
 ## Common Tasks
 
@@ -79,3 +99,4 @@ For Vietnamese users, answer in Vietnamese by default. Be concise and practical:
 - User asks "tìm lại trong kho VOZ": call `search_archive(query)`.
 - User sends many VOZ URLs: call `crawl_threads(urls, mode="auto")`, then summarize or search as requested.
 - User asks how browser accounts are chosen: explain configured endpoints first, then auto-launched browser profiles, plus finite fallback.
+- User asks to turn a thread into knowledge/experience/insight: archive it, clean noise, preserve real links, inspect content links, then write a natural insight guide using `references/insight-writing.md`.

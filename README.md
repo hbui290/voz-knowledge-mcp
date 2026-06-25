@@ -35,6 +35,22 @@ Tools exposed:
 - `crawl_threads(urls, mode="auto", max_pages=None)`
 - `setup_browser_cdp()`
 
+## Recommended Knowledge Workflow
+
+The MCP stores raw structured forum content. For real knowledge work, use the MCP output as source material and let the agent synthesize from it. A good workflow is:
+
+1. Crawl/archive the thread with `read_thread` or `summarize_thread`.
+2. Work from structured posts or JSON/SQLite archive, not only the short summary.
+3. Remove low-signal noise such as bumps, bookmarks, thanks-only replies, app signatures, and empty replies.
+4. Clean links conservatively:
+   - remove forum mechanics such as `voz.vn/goto/post?id=...`, profile/share/quote links, smilies, app signature links, emoji CDN, and `data:image` placeholders;
+   - keep real resources such as VOZ attachments, VOZ thread/post links, YouTube, Reddit, Facebook, TikTok, X/Twitter, Telegram, tools, files, and external references.
+5. Inspect preserved content links before writing a guide. Summarize the role of each meaningful link in the discussion.
+6. Treat screenshots as evidence tied to their source posts. Link them for verification and avoid over-interpreting image-only evidence.
+7. Write a natural insight guide: concrete lessons, traps, what to do, what to avoid, and why the source supports each point.
+
+The companion skill includes `references/insight-writing.md` with the recommended style for turning long VOZ threads into useful knowledge notes.
+
 ## CLI
 
 ```bash
