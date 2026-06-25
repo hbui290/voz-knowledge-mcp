@@ -1,0 +1,4 @@
+interface:
+  display_name: "VOZ Knowledge"
+  short_description: "Archive and summarize VOZ forum knowledge"
+  default_prompt: "Use $voz-knowledge to read, archive, search, and summarize VOZ forum threads."
