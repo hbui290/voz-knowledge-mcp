@@ -119,3 +119,7 @@ MCP stops at the first browser endpoint that returns readable posts. If none wor
 Set `VOZ_AUTO_LAUNCH_BROWSERS=0` to disable automatic browser launch and use only configured CDP endpoints.
 
 Do not put passwords in git. `archive/` is ignored.
+
+## License
+
+MIT
