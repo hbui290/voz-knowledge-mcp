@@ -1,6 +1,8 @@
 # VOZ Knowledge MCP
 
-Local Python MCP server for crawling public or logged-in VOZ threads, archiving posts to SQLite, and exposing search/summarization tools to an AI agent.
+Local Python MCP server for crawling public or logged-in [VOZ](https://voz.vn/) forum threads, archiving posts to SQLite, and exposing search/summarization tools to an AI agent.
+
+Target forum: [https://voz.vn/](https://voz.vn/)
 
 MCP SDK needs Python 3.10+. In this Codex workspace, use the bundled Python runtime if the system `python3` is 3.9.
 
