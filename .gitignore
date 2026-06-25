@@ -5,6 +5,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 archive/
+reports/
 secrets/
 *.sqlite
 *.sqlite3

@@ -23,20 +23,22 @@ class VozCrawler:
         self,
         store: ArchiveStore,
         archive_dir: Path,
+        reports_dir: Optional[Path] = None,
         delay_seconds: float = 0.7,
         timeout_seconds: int = 20,
     ):
         self.store = store
         self.archive_dir = Path(archive_dir)
+        self.reports_dir = Path(reports_dir) if reports_dir else self.archive_dir.parent / "reports"
         self.cdp_manager = BrowserCdpManager(self.archive_dir)
         self.delay_seconds = delay_seconds
         self.timeout_seconds = timeout_seconds
         self.parser = VozParser()
         self.raw_dir = self.archive_dir / "raw"
-        self.json_dir = self.archive_dir / "json"
-        self.markdown_dir = self.archive_dir / "markdown"
+        self.exports_dir = self.archive_dir / "exports"
         self.packets_dir = self.archive_dir / "packets"
-        for directory in (self.raw_dir, self.json_dir, self.markdown_dir, self.packets_dir):
+        self.summaries_dir = self.reports_dir / "summaries"
+        for directory in (self.raw_dir, self.exports_dir, self.packets_dir, self.summaries_dir):
             directory.mkdir(parents=True, exist_ok=True)
 
     def read_thread(self, url: str, mode: str = "auto", max_pages: Optional[int] = None) -> Dict:
@@ -102,9 +104,9 @@ class VozCrawler:
         posts = self.store.get_thread_posts(result["thread_url"])
         summary = self._build_summary(result["title"], result["thread_url"], posts, self.store.list_assets(result["thread_url"]))
         self.store.save_summary(result["thread_url"], summary)
-        path = self.markdown_dir / f"{self._slug(result['thread_url'])}.md"
+        path = self.summaries_dir / f"{self._slug(result['thread_url'])}.md"
         path.write_text(summary, encoding="utf-8")
-        return {"thread_url": result["thread_url"], "summary_markdown": summary, "markdown_path": str(path)}
+        return {"thread_url": result["thread_url"], "summary_markdown": summary, "report_path": str(path)}
 
     def build_thread_packet(self, url: str, mode: str = "auto", max_posts: Optional[int] = None) -> Dict:
         result = self.read_thread(url, mode=mode)
@@ -224,7 +226,7 @@ class VozCrawler:
             "posts": archived_posts,
             "assets": archived_assets,
         }
-        json_path = self.json_dir / f"{self._slug(thread_url)}.json"
+        json_path = self.exports_dir / f"{self._slug(thread_url)}.json"
         json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         payload["json_path"] = str(json_path)
         return payload

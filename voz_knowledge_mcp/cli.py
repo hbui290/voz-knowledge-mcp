@@ -8,13 +8,15 @@ from .storage import ArchiveStore
 
 def build_crawler(args: argparse.Namespace) -> VozCrawler:
     archive_dir = Path(args.archive_dir)
+    reports_dir = Path(args.reports_dir)
     db_path = Path(args.db_path) if args.db_path else archive_dir / "voz_archive.sqlite"
-    return VozCrawler(ArchiveStore(db_path), archive_dir)
+    return VozCrawler(ArchiveStore(db_path), archive_dir, reports_dir=reports_dir)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="VOZ knowledge collector")
     parser.add_argument("--archive-dir", default="archive")
+    parser.add_argument("--reports-dir", default="reports")
     parser.add_argument("--db-path")
     sub = parser.add_subparsers(dest="command", required=True)
 

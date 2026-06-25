@@ -9,13 +9,14 @@ from .storage import ArchiveStore
 
 
 ARCHIVE_DIR = Path(os.environ.get("VOZ_ARCHIVE_DIR", "archive"))
+REPORTS_DIR = Path(os.environ.get("VOZ_REPORTS_DIR", "reports"))
 DB_PATH = Path(os.environ.get("VOZ_ARCHIVE_DB", str(ARCHIVE_DIR / "voz_archive.sqlite")))
 
 mcp = FastMCP("voz_knowledge_mcp")
 
 
 def _crawler() -> VozCrawler:
-    return VozCrawler(ArchiveStore(DB_PATH), ARCHIVE_DIR)
+    return VozCrawler(ArchiveStore(DB_PATH), ARCHIVE_DIR, reports_dir=REPORTS_DIR)
 
 
 @mcp.tool()

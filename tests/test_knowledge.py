@@ -115,6 +115,34 @@ class KnowledgeProcessingTest(unittest.TestCase):
             self.assertEqual(digest["matching_posts"], 1)
             self.assertEqual(digest["posts"][0]["post_id"], "4")
 
+    def test_summarize_thread_writes_human_report_under_reports(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            crawler = VozCrawler(
+                ArchiveStore(Path(tmp) / "archive.sqlite"),
+                Path(tmp) / "archive",
+                reports_dir=Path(tmp) / "reports",
+            )
+
+            def fake_crawl(url, mode, max_pages):
+                return [
+                    ThreadPage(
+                        url=url,
+                        title="Content Creator",
+                        page_count=1,
+                        posts=[
+                            ParsedPost("1", "user", "2026-01-01T00:00:00+0700", "kinh nghiệm làm youtube shorts"),
+                        ],
+                    )
+                ]
+
+            with patch.object(crawler, "_crawl_with_mode", side_effect=fake_crawl):
+                result = crawler.summarize_thread("https://voz.vn/t/sample.123/", mode="public")
+
+            report_path = Path(result["report_path"])
+            self.assertTrue(report_path.exists())
+            self.assertEqual(report_path.parent, Path(tmp) / "reports" / "summaries")
+            self.assertNotIn("markdown_path", result)
+
 
 if __name__ == "__main__":
     unittest.main()

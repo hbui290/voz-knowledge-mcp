@@ -11,7 +11,7 @@ Target forum: [https://voz.vn/](https://voz.vn/)
 - Search archived posts quickly, or group search results by topic.
 - Build full-thread packets for long-form insight writing instead of relying on small search samples.
 - Extract useful links while removing VOZ mechanics such as `goto/post?id=...`.
-- Keep raw HTML, summaries, JSON exports, and packet outputs in a local ignored archive folder.
+- Keep human-readable reports and machine-readable crawl data in local ignored folders.
 
 ## Quick Start
 
@@ -28,6 +28,8 @@ Run a quick public crawl:
 ```bash
 python -m voz_knowledge_mcp.cli summarize-thread "https://voz.vn/t/example.123/" --mode public
 ```
+
+Human-readable Markdown output is written under `reports/`. Crawl data, raw HTML, JSON exports, and packets are written under `archive/`.
 
 Run as an MCP server:
 
@@ -60,7 +62,7 @@ Companion Codex skill for agents: `skills/voz-knowledge/SKILL.md`.
 | Tool | Use when |
 | --- | --- |
 | `read_thread(url, mode="auto", max_pages=None)` | Archive a VOZ thread and return structured posts/assets. |
-| `summarize_thread(url, mode="auto")` | Create a readable Markdown summary from a thread. |
+| `summarize_thread(url, mode="auto")` | Create a readable Markdown summary under `reports/summaries/`. |
 | `search_archive(query, limit=50)` | Do a quick keyword lookup in archived posts. |
 | `search_archive_grouped(query, limit_per_group=5, max_matches=500)` | Search and group matching posts by topic. |
 | `extract_links(url, mode="auto")` | Extract external links, images, and attachments from a thread. |
@@ -149,16 +151,36 @@ Set `VOZ_AUTO_LAUNCH_BROWSERS=0` to disable automatic browser launch and use onl
 
 ## Local Data
 
-Runtime data is written under `archive/`:
+Paths are relative to the project directory or MCP `cwd`, not to a fixed machine path.
 
-- `archive/voz.db`: SQLite archive.
+Human-readable documents are written under `reports/`:
+
+- `reports/summaries/`: Markdown summaries created by `summarize_thread`.
+- `reports/`: recommended place for final human-written insight notes or guides created from MCP output.
+
+Machine-readable crawl data is written under `archive/`:
+
+- `archive/voz_archive.sqlite`: SQLite archive.
 - `archive/raw/`: raw HTML snapshots for debugging.
-- `archive/summaries/`: Markdown summaries.
 - `archive/exports/`: JSON exports.
 - `archive/packets/`: full-thread knowledge packets.
 - `archive/browser-profiles/`: dedicated browser profiles for auto-launched browser fallback.
 
-`archive/` is ignored by git.
+Both `reports/` and `archive/` are ignored by git because they may contain crawled forum content, private session data, or user-specific notes.
+
+You can override the defaults:
+
+```bash
+python -m voz_knowledge_mcp.cli --reports-dir my-reports --archive-dir my-archive summarize-thread "https://voz.vn/t/example.123/"
+```
+
+For MCP server usage, set environment variables:
+
+```bash
+VOZ_REPORTS_DIR=my-reports
+VOZ_ARCHIVE_DIR=my-archive
+VOZ_ARCHIVE_DB=my-archive/voz_archive.sqlite
+```
 
 ## Limitations
 
@@ -171,7 +193,7 @@ Runtime data is written under `archive/`:
 
 ## Privacy and Safety
 
-Keep this server local. Do not expose browser CDP ports publicly. Do not commit `archive/`, browser profiles, cookies, exported private content, or other session data.
+Keep this server local. Do not expose browser CDP ports publicly. Do not commit `archive/`, `reports/`, browser profiles, cookies, exported private content, or other session data.
 
 When summarizing forum content, preserve useful source links and avoid presenting unverified claims as facts.
 
