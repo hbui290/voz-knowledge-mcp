@@ -29,7 +29,7 @@ class VozCrawler:
     ):
         self.store = store
         self.archive_dir = Path(archive_dir)
-        self.reports_dir = Path(reports_dir) if reports_dir else self.archive_dir.parent / "reports"
+        self.reports_dir = Path(reports_dir) if reports_dir else self.archive_dir.parent / "reports" / "voz"
         self.cdp_manager = BrowserCdpManager(self.archive_dir)
         self.delay_seconds = delay_seconds
         self.timeout_seconds = timeout_seconds

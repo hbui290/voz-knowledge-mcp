@@ -29,7 +29,7 @@ Run a quick public crawl:
 python -m voz_knowledge_mcp.cli summarize-thread "https://voz.vn/t/example.123/" --mode public
 ```
 
-Human-readable Markdown output is written under `reports/`. Crawl data, raw HTML, JSON exports, and packets are written under `archive/`.
+Human-readable VOZ Markdown output is written under `reports/voz/`. Crawl data, raw HTML, JSON exports, and packets are written under `archive/`.
 
 Run as an MCP server:
 
@@ -62,7 +62,7 @@ Companion Codex skill for agents: `skills/voz-knowledge/SKILL.md`.
 | Tool | Use when |
 | --- | --- |
 | `read_thread(url, mode="auto", max_pages=None)` | Archive a VOZ thread and return structured posts/assets. |
-| `summarize_thread(url, mode="auto")` | Create a readable Markdown summary under `reports/summaries/`. |
+| `summarize_thread(url, mode="auto")` | Create a readable Markdown summary under `reports/voz/summaries/`. |
 | `search_archive(query, limit=50)` | Do a quick keyword lookup in archived posts. |
 | `search_archive_grouped(query, limit_per_group=5, max_matches=500)` | Search and group matching posts by topic. |
 | `extract_links(url, mode="auto")` | Extract external links, images, and attachments from a thread. |
@@ -153,10 +153,10 @@ Set `VOZ_AUTO_LAUNCH_BROWSERS=0` to disable automatic browser launch and use onl
 
 Paths are relative to the project directory or MCP `cwd`, not to a fixed machine path.
 
-Human-readable documents are written under `reports/`:
+Human-readable VOZ documents are written under `reports/voz/`:
 
-- `reports/summaries/`: Markdown summaries created by `summarize_thread`.
-- `reports/`: recommended place for final human-written insight notes or guides created from MCP output.
+- `reports/voz/summaries/`: Markdown summaries created by `summarize_thread`.
+- `reports/voz/`: recommended place for final human-written VOZ insight notes or guides created from MCP output.
 
 Machine-readable crawl data is written under `archive/`:
 
@@ -171,13 +171,13 @@ Both `reports/` and `archive/` are ignored by git because they may contain crawl
 You can override the defaults:
 
 ```bash
-python -m voz_knowledge_mcp.cli --reports-dir my-reports --archive-dir my-archive summarize-thread "https://voz.vn/t/example.123/"
+python -m voz_knowledge_mcp.cli --reports-dir reports/voz --archive-dir archive summarize-thread "https://voz.vn/t/example.123/"
 ```
 
 For MCP server usage, set environment variables:
 
 ```bash
-VOZ_REPORTS_DIR=my-reports
+VOZ_REPORTS_DIR=reports/voz
 VOZ_ARCHIVE_DIR=my-archive
 VOZ_ARCHIVE_DB=my-archive/voz_archive.sqlite
 ```

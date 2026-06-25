@@ -14,7 +14,7 @@ Use the local `voz_knowledge_mcp` server as the source of truth for VOZ thread c
 Use these MCP tools when available:
 
 - `read_thread(url, mode="auto", max_pages=None)`: archive a VOZ thread and return structured posts/assets.
-- `summarize_thread(url, mode="auto")`: archive the thread and create a Markdown summary under `reports/summaries/`.
+- `summarize_thread(url, mode="auto")`: archive the thread and create a Markdown summary under `reports/voz/summaries/`.
 - `search_archive(query, limit=50)`: quick keyword lookup in archived posts; not enough for full-thread insight synthesis.
 - `search_archive_grouped(query, limit_per_group=5, max_matches=500)`: keyword lookup grouped by heuristic topic.
 - `extract_links(url, mode="auto")`: archive the thread and return links/images/assets.
@@ -89,7 +89,7 @@ export VOZ_BROWSER_CDP_URLS=http://127.0.0.1:9223,http://127.0.0.1:9222
 
 For Vietnamese users, answer in Vietnamese by default. Be concise and practical:
 
-- For a newly crawled thread, state whether the result came from `public` or `browser`, how many pages/posts were archived, and where the report/export lives if created. Human-readable Markdown reports live under `reports/`; machine-readable crawl data lives under `archive/`.
+- For a newly crawled thread, state whether the result came from `public` or `browser`, how many pages/posts were archived, and where the report/export lives if created. Human-readable VOZ Markdown reports live under `reports/voz/`; machine-readable crawl data lives under `archive/`.
 - For summaries, separate signal from noise: key ideas, actionable checklist, useful links/resources, and caveats requiring verification.
 - For search results, cite usernames/post IDs/timestamps when available.
 - For potentially scammy or gray-market content, avoid endorsing claims; summarize neutrally and warn to verify links/files.

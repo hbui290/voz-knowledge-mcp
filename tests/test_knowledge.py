@@ -120,7 +120,7 @@ class KnowledgeProcessingTest(unittest.TestCase):
             crawler = VozCrawler(
                 ArchiveStore(Path(tmp) / "archive.sqlite"),
                 Path(tmp) / "archive",
-                reports_dir=Path(tmp) / "reports",
+                reports_dir=Path(tmp) / "reports" / "voz",
             )
 
             def fake_crawl(url, mode, max_pages):
@@ -140,7 +140,7 @@ class KnowledgeProcessingTest(unittest.TestCase):
 
             report_path = Path(result["report_path"])
             self.assertTrue(report_path.exists())
-            self.assertEqual(report_path.parent, Path(tmp) / "reports" / "summaries")
+            self.assertEqual(report_path.parent, Path(tmp) / "reports" / "voz" / "summaries")
             self.assertNotIn("markdown_path", result)
 
 

@@ -16,7 +16,7 @@ def build_crawler(args: argparse.Namespace) -> VozCrawler:
 def main() -> None:
     parser = argparse.ArgumentParser(description="VOZ knowledge collector")
     parser.add_argument("--archive-dir", default="archive")
-    parser.add_argument("--reports-dir", default="reports")
+    parser.add_argument("--reports-dir", default="reports/voz")
     parser.add_argument("--db-path")
     sub = parser.add_subparsers(dest="command", required=True)
 
